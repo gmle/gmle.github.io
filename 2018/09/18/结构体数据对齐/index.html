@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon.ico">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.ico">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"example.com","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="数据对齐结构体数据对齐：指结构体内各个数据的内存地址的对齐在结构体中的第一个成员的首地址等于整个结构体的变量的首地址后面的成员地址随着它声明的首地址和实际占用的字节数递增。而为了总的结构体大小对齐，会在结构体中插入一些没有实际意义的字符填充结构体">
+<meta property="og:type" content="article">
+<meta property="og:title" content="结构体数据对齐详解">
+<meta property="og:url" content="http://example.com/2018/09/18/%E7%BB%93%E6%9E%84%E4%BD%93%E6%95%B0%E6%8D%AE%E5%AF%B9%E9%BD%90/index.html">
+<meta property="og:site_name" content="忘了">
+<meta property="og:description" content="数据对齐结构体数据对齐：指结构体内各个数据的内存地址的对齐在结构体中的第一个成员的首地址等于整个结构体的变量的首地址后面的成员地址随着它声明的首地址和实际占用的字节数递增。而为了总的结构体大小对齐，会在结构体中插入一些没有实际意义的字符填充结构体">
+<meta property="og:locale">
+<meta property="article:published_time" content="2018-09-18T06:46:21.000Z">
+<meta property="article:modified_time" content="2018-09-20T06:26:32.000Z">
+<meta property="article:author" content="忘了">
+<meta property="article:tag" content="C">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://example.com/2018/09/18/%E7%BB%93%E6%9E%84%E4%BD%93%E6%95%B0%E6%8D%AE%E5%AF%B9%E9%BD%90/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-Hans'
+  };
+</script>
+
+  <title>结构体数据对齐详解 | 忘了</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">忘了</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>About</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>Tags</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>Categories</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2018/09/18/%E7%BB%93%E6%9E%84%E4%BD%93%E6%95%B0%E6%8D%AE%E5%AF%B9%E9%BD%90/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="忘了">
+      <meta itemprop="description" content="指尖悦动，代码跳舞。">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="忘了">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          结构体数据对齐详解
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2018-09-18 14:46:21" itemprop="dateCreated datePublished" datetime="2018-09-18T14:46:21+08:00">2018-09-18</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2018-09-20 14:26:32" itemprop="dateModified" datetime="2018-09-20T14:26:32+08:00">2018-09-20</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/C/" itemprop="url" rel="index"><span itemprop="name">C</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h2 id="数据对齐"><a href="#数据对齐" class="headerlink" title="数据对齐"></a>数据对齐</h2><p>结构体数据对齐：指结构体内各个数据的内存地址的对齐<br><strong>在结构体中的第一个成员的首地址等于整个结构体的变量的首地址</strong><br>后面的成员地址随着它声明的首地址和实际占用的字节数递增。<br>而为了总的结构体大小对齐，会在结构体中插入一些没有实际意义的字符填充结构体</p>
+<a id="more"></a>
+
+<p>通俗点讲，计算机系统对基本类型的数据在内存中存放的位置有限制，系统会要求这些数据的首地址的值是某个数(这个数一般为4或者8的)的倍数，这就是所谓的内存对齐</p>
+<p>而32位机器上默认的对齐模数一般为4，64位机上位8。</p>
+<p>在结构体中，成员数据对齐满足以下规则：</p>
+<ul>
+<li>结构体重的第一个成员的首地址即时结构体变量的首地址。</li>
+<li>结构体中的每一个成员的首地址相对于结构体IDE首地址的偏移量是该成员数据类型大小的整数倍。</li>
+<li>结构体的总大小是对齐模数（对齐模数等于#pragma pack(n)所指定的n与结构体重最大数据类型的成员大小的最小值）的整数倍</li>
+</ul>
+<p>Example：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">One</span>&#123;</span></span><br><span class="line">  <span class="keyword">double</span> d;</span><br><span class="line">  <span class="keyword">char</span> c;</span><br><span class="line">  <span class="keyword">int</span> i;</span><br><span class="line">&#125;</span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">Two</span>&#123;</span></span><br><span class="line">  <span class="keyword">char</span> c;</span><br><span class="line">  <span class="keyword">double</span> d;</span><br><span class="line">  <span class="keyword">int</span> i;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<table>
+<thead>
+<tr>
+<th>struct</th>
+<th>type</th>
+<th>pack(4)</th>
+<th>pack(8)</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>one</td>
+<td>double</td>
+<td>8</td>
+<td>8</td>
+</tr>
+<tr>
+<td></td>
+<td>char</td>
+<td>1+3</td>
+<td>1+3</td>
+</tr>
+<tr>
+<td></td>
+<td>int</td>
+<td>4</td>
+<td>4</td>
+</tr>
+<tr>
+<td>result</td>
+<td></td>
+<td>16</td>
+<td>16</td>
+</tr>
+<tr>
+<td>two</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td>char</td>
+<td>1+3</td>
+<td>1+7</td>
+</tr>
+<tr>
+<td></td>
+<td>double</td>
+<td>8</td>
+<td>8</td>
+</tr>
+<tr>
+<td></td>
+<td>int</td>
+<td>4</td>
+<td>4+4</td>
+</tr>
+<tr>
+<td>result</td>
+<td></td>
+<td>16</td>
+<td>24</td>
+</tr>
+</tbody></table>
+<h2 id="进阶C"><a href="#进阶C" class="headerlink" title="进阶C++"></a>进阶C++</h2><h3 id="C-中的数据对齐"><a href="#C-中的数据对齐" class="headerlink" title="C++中的数据对齐"></a>C++中的数据对齐</h3><p>环境：macOS 11.13.6 64位<br>编译器：clang-902.0.39.2<br>系统int大小为4字节，指针大小为8字节。</p>
+<h4 id="空类"><a href="#空类" class="headerlink" title="空类"></a>空类</h4><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">A</span> &#123;</span>&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>空类sizeof的结果为1，为什么不是0呢？因为C++标准规定两个不同实例的内存地址必须不同，所以用这一个字节来占用不同的内存地址，让空类的两个实例可以相互区分。</p>
+<h4 id="单个数据类型"><a href="#单个数据类型" class="headerlink" title="单个数据类型"></a>单个数据类型</h4><p>大多数编译器支持空基类优化（Empty Base Class Optimization, EBCO），即从空基类中派生出来的类并不会增加1字节，如：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">B</span>:</span><span class="keyword">public</span> A&#123;</span><br><span class="line">  <span class="keyword">int</span> a;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>sizeof(B)的结果为4而不是5或8。</p>
+<h4 id="静态数据成员类型"><a href="#静态数据成员类型" class="headerlink" title="静态数据成员类型"></a>静态数据成员类型</h4><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">C</span>&#123;</span></span><br><span class="line">  <span class="keyword">int</span> a;</span><br><span class="line">  <span class="keyword">static</span> <span class="keyword">int</span> b;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>sizeof 结果为4,静态数据成员被存放在类对象之外。</p>
+<h4 id="带非虚函数成员的类"><a href="#带非虚函数成员的类" class="headerlink" title="带非虚函数成员的类"></a>带非虚函数成员的类</h4><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">D</span> &#123;</span></span><br><span class="line">  <span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">func1</span><span class="params">()</span> </span>&#123;&#125;</span><br><span class="line">    <span class="function"><span class="keyword">static</span> <span class="keyword">void</span> <span class="title">func2</span><span class="params">()</span> </span>&#123;&#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>sizeof(D)结果为1，无论是普通成员函数还是静态成员函数都被存放在类对象之外。</p>
+<h4 id="带虚函数成员的类"><a href="#带虚函数成员的类" class="headerlink" title="带虚函数成员的类"></a>带虚函数成员的类</h4><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">E</span> &#123;</span></span><br><span class="line">  <span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="keyword">virtual</span> <span class="keyword">void</span> <span class="title">func</span><span class="params">()</span> </span>&#123;&#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>sizeof(E)结果为8，带虚函数成员的类对象会包含一个指向该类的virtual table的指针。</p>
+<h4 id="普通派生类"><a href="#普通派生类" class="headerlink" title="普通派生类"></a>普通派生类</h4><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">G</span> :</span> <span class="keyword">public</span> C &#123;</span><br><span class="line">  <span class="keyword">int</span> a;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>sizeof(G)的结果为8，派生类会存放基类中非静态数据成员(C中的a)的副本。</p>
+<h4 id="基类带虚函数的派生类"><a href="#基类带虚函数的派生类" class="headerlink" title="基类带虚函数的派生类"></a>基类带虚函数的派生类</h4><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">H</span> :</span> <span class="keyword">public</span> E &#123;&#125;;</span><br></pre></td></tr></table></figure>
+<p>sizeof(H)结果为8，由于基类中带虚函数，派生类中也必须保存一个指向派生类的virtual table的指针。</p>
+<h4 id="多重继承的派生类"><a href="#多重继承的派生类" class="headerlink" title="多重继承的派生类"></a>多重继承的派生类</h4><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">E1</span> &#123;</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="keyword">virtual</span> <span class="keyword">void</span> <span class="title">func</span><span class="params">()</span> </span>&#123;&#125;</span><br><span class="line">&#125;;</span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">E2</span> &#123;</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="keyword">virtual</span> <span class="keyword">void</span> <span class="title">func</span><span class="params">()</span> </span>&#123;&#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">E3</span> :</span><span class="keyword">public</span> E1, <span class="keyword">public</span> E2&#123;&#125;;</span><br></pre></td></tr></table></figure>
+<p>sizeof(E3)结果为16，子类中保存了两个virtual table的指针</p>
+<h4 id="虚继承的派生类"><a href="#虚继承的派生类" class="headerlink" title="虚继承的派生类"></a>虚继承的派生类</h4><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">H1</span>&#123;</span>&#125;;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">H2</span>&#123;</span></span><br><span class="line">    <span class="keyword">int</span> a&#123;&#125;;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">H3</span>:</span><span class="keyword">public</span> <span class="keyword">virtual</span> H1, <span class="keyword">public</span> <span class="keyword">virtual</span> H2&#123;&#125;;</span><br></pre></td></tr></table></figure>
+<p>sizeof(H3)的结果为16，是两个基类中的virtual table指针</p>
+<h3 id="普通类的对齐规则"><a href="#普通类的对齐规则" class="headerlink" title="普通类的对齐规则"></a>普通类的对齐规则</h3><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">F</span> &#123;</span></span><br><span class="line">  <span class="keyword">char</span> a;</span><br><span class="line">  <span class="keyword">int</span>  b;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>sizeof(F)的结果为8而不是5，由于F的最大对齐值为4（int），因此a和b之间被补齐3字节。</p>
+<h3 id="多重继承下的对齐规则"><a href="#多重继承下的对齐规则" class="headerlink" title="多重继承下的对齐规则"></a>多重继承下的对齐规则</h3><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">G1</span>&#123;</span></span><br><span class="line">    <span class="keyword">long</span> l;</span><br><span class="line">    <span class="keyword">int</span> a;</span><br><span class="line">    <span class="keyword">char</span> *b;</span><br><span class="line">    <span class="function"><span class="keyword">virtual</span> <span class="keyword">void</span> <span class="title">func</span><span class="params">()</span></span>&#123;&#125;;</span><br><span class="line">&#125;;</span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">G2</span>&#123;</span></span><br><span class="line">    <span class="keyword">int</span> a;</span><br><span class="line">    <span class="keyword">char</span> b;</span><br><span class="line">    <span class="function"><span class="keyword">virtual</span> <span class="keyword">void</span> <span class="title">func</span><span class="params">()</span></span>&#123;&#125;;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">G3</span>:</span><span class="keyword">public</span> G1, <span class="keyword">public</span> G2&#123;&#125;;</span><br></pre></td></tr></table></figure>
+<p>sizeof(G3)的结果为48，默认对齐模数为8的情况下<br>G1 = （8）+（4）+（8）+（8）<br>G2 = （4+4）+（1+7）+（8）<br>G3 = 48</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/C/" rel="tag"># C</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2018/08/25/kill%E4%B8%8Ekill%20-9%E7%9A%84%E5%8C%BA%E5%88%AB/" rel="prev" title="kill && kill -9">
+      <i class="fa fa-chevron-left"></i> kill && kill -9
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2018/10/14/fastDFS/" rel="next" title="fastDFS使用与介绍">
+      fastDFS使用与介绍 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%95%B0%E6%8D%AE%E5%AF%B9%E9%BD%90"><span class="nav-number">1.</span> <span class="nav-text">数据对齐</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%BF%9B%E9%98%B6C"><span class="nav-number">2.</span> <span class="nav-text">进阶C++</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#C-%E4%B8%AD%E7%9A%84%E6%95%B0%E6%8D%AE%E5%AF%B9%E9%BD%90"><span class="nav-number">2.1.</span> <span class="nav-text">C++中的数据对齐</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%A9%BA%E7%B1%BB"><span class="nav-number">2.1.1.</span> <span class="nav-text">空类</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%8D%95%E4%B8%AA%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B"><span class="nav-number">2.1.2.</span> <span class="nav-text">单个数据类型</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E9%9D%99%E6%80%81%E6%95%B0%E6%8D%AE%E6%88%90%E5%91%98%E7%B1%BB%E5%9E%8B"><span class="nav-number">2.1.3.</span> <span class="nav-text">静态数据成员类型</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%B8%A6%E9%9D%9E%E8%99%9A%E5%87%BD%E6%95%B0%E6%88%90%E5%91%98%E7%9A%84%E7%B1%BB"><span class="nav-number">2.1.4.</span> <span class="nav-text">带非虚函数成员的类</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%B8%A6%E8%99%9A%E5%87%BD%E6%95%B0%E6%88%90%E5%91%98%E7%9A%84%E7%B1%BB"><span class="nav-number">2.1.5.</span> <span class="nav-text">带虚函数成员的类</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%99%AE%E9%80%9A%E6%B4%BE%E7%94%9F%E7%B1%BB"><span class="nav-number">2.1.6.</span> <span class="nav-text">普通派生类</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%9F%BA%E7%B1%BB%E5%B8%A6%E8%99%9A%E5%87%BD%E6%95%B0%E7%9A%84%E6%B4%BE%E7%94%9F%E7%B1%BB"><span class="nav-number">2.1.7.</span> <span class="nav-text">基类带虚函数的派生类</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%A4%9A%E9%87%8D%E7%BB%A7%E6%89%BF%E7%9A%84%E6%B4%BE%E7%94%9F%E7%B1%BB"><span class="nav-number">2.1.8.</span> <span class="nav-text">多重继承的派生类</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%99%9A%E7%BB%A7%E6%89%BF%E7%9A%84%E6%B4%BE%E7%94%9F%E7%B1%BB"><span class="nav-number">2.1.9.</span> <span class="nav-text">虚继承的派生类</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%99%AE%E9%80%9A%E7%B1%BB%E7%9A%84%E5%AF%B9%E9%BD%90%E8%A7%84%E5%88%99"><span class="nav-number">2.2.</span> <span class="nav-text">普通类的对齐规则</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%A4%9A%E9%87%8D%E7%BB%A7%E6%89%BF%E4%B8%8B%E7%9A%84%E5%AF%B9%E9%BD%90%E8%A7%84%E5%88%99"><span class="nav-number">2.3.</span> <span class="nav-text">多重继承下的对齐规则</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">忘了</p>
+  <div class="site-description" itemprop="description">指尖悦动，代码跳舞。</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">14</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">10</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">15</span>
+        <span class="site-state-item-name">tags</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/gmle" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;gmle" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:e.le.lee.leee@gmail.com" title="E-Mail → mailto:e.le.lee.leee@gmail.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2015 – 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">忘了</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

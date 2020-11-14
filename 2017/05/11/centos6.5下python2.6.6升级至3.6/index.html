@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon.ico">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.ico">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"example.com","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="此次升级保留旧版本的环境。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="在Centos6.5下升级python至3.6.0">
+<meta property="og:url" content="http://example.com/2017/05/11/centos6.5%E4%B8%8Bpython2.6.6%E5%8D%87%E7%BA%A7%E8%87%B33.6/index.html">
+<meta property="og:site_name" content="忘了">
+<meta property="og:description" content="此次升级保留旧版本的环境。">
+<meta property="og:locale">
+<meta property="article:published_time" content="2017-05-11T07:57:48.000Z">
+<meta property="article:modified_time" content="2017-05-11T07:57:48.000Z">
+<meta property="article:author" content="忘了">
+<meta property="article:tag" content="Centos">
+<meta property="article:tag" content="Python">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://example.com/2017/05/11/centos6.5%E4%B8%8Bpython2.6.6%E5%8D%87%E7%BA%A7%E8%87%B33.6/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-Hans'
+  };
+</script>
+
+  <title>在Centos6.5下升级python至3.6.0 | 忘了</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">忘了</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>About</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>Tags</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>Categories</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2017/05/11/centos6.5%E4%B8%8Bpython2.6.6%E5%8D%87%E7%BA%A7%E8%87%B33.6/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="忘了">
+      <meta itemprop="description" content="指尖悦动，代码跳舞。">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="忘了">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          在Centos6.5下升级python至3.6.0
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2017-05-11 15:57:48" itemprop="dateCreated datePublished" datetime="2017-05-11T15:57:48+08:00">2017-05-11</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Centos/" itemprop="url" rel="index"><span itemprop="name">Centos</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h2 id="此次升级保留旧版本的环境。"><a href="#此次升级保留旧版本的环境。" class="headerlink" title="此次升级保留旧版本的环境。"></a>此次升级保留旧版本的环境。</h2><a id="more"></a>
+
+<h2 id="配置系统环境"><a href="#配置系统环境" class="headerlink" title="配置系统环境"></a>配置系统环境</h2><h3 id="安装开发工具"><a href="#安装开发工具" class="headerlink" title="安装开发工具"></a>安装开发工具</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">yum groupinstall -y developement</span><br></pre></td></tr></table></figure>
+<h3 id="安装python3解码支持包"><a href="#安装python3解码支持包" class="headerlink" title="安装python3解码支持包"></a>安装python3解码支持包</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">yum install -y zlib-devel openssl-devel sqlite-devel bzip2-devel</span><br></pre></td></tr></table></figure>
+<h2 id="准备更新版本"><a href="#准备更新版本" class="headerlink" title="准备更新版本"></a>准备更新版本</h2><h3 id="验证原有的python版本"><a href="#验证原有的python版本" class="headerlink" title="验证原有的python版本"></a>验证原有的python版本</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">python -V</span><br></pre></td></tr></table></figure>
+<p>python 2.6.6</p>
+<h3 id="下载python3-6-0包"><a href="#下载python3-6-0包" class="headerlink" title="下载python3.6.0包"></a>下载python3.6.0包</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">wget http://www.python.org/ftp/python/3.6.0/Python-3.6.0.tar.xz</span><br></pre></td></tr></table></figure>
+<h3 id="解压编译python安装包"><a href="#解压编译python安装包" class="headerlink" title="解压编译python安装包"></a>解压编译python安装包</h3><h4 id="解压"><a href="#解压" class="headerlink" title="解压"></a>解压</h4><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">xz -d Python-3.6.0.tar.xz</span><br><span class="line">tar -xvf Python-3.6.0.tar</span><br></pre></td></tr></table></figure>
+<h4 id="编译"><a href="#编译" class="headerlink" title="编译"></a>编译</h4><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">cd Python-3.6.0</span><br><span class="line"><span class="meta">#</span><span class="bash"> 配置安装路径</span></span><br><span class="line">./configure --prefix=/usr/local</span><br></pre></td></tr></table></figure>
+<ul>
+<li>如果出现编译错误可能是因为gcc gcc-c++版本太低或者未安装，使用代码<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">yum -y install gcc gcc-c++</span><br></pre></td></tr></table></figure></li>
+<li>进行安装，然后重新编译./configure<h3 id="执行安装"><a href="#执行安装" class="headerlink" title="执行安装"></a>执行安装</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">make &amp;&amp; make altinstall</span><br></pre></td></tr></table></figure>
+<h3 id="建立软连接-就是快捷方式"><a href="#建立软连接-就是快捷方式" class="headerlink" title="建立软连接(就是快捷方式)"></a>建立软连接(就是快捷方式)</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">mv /usr/bin/python /usr/bin/python2.6.6    ##你的python版本可能不同</span><br><span class="line">ln -s /usr/local/bin/python3.6 /usr/bin/python</span><br></pre></td></tr></table></figure></li>
+<li>重新验证python版本，<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">python -V</span><br></pre></td></tr></table></figure></li>
+<li>python3.6.0</li>
+</ul>
+<h3 id="yum指令会报错，将其重新指向旧版本的python"><a href="#yum指令会报错，将其重新指向旧版本的python" class="headerlink" title="yum指令会报错，将其重新指向旧版本的python"></a>yum指令会报错，将其重新指向旧版本的python</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">vi /usr/bin/yum</span><br></pre></td></tr></table></figure>
+<ul>
+<li>将文件的头部#！/usr/bin/python改为#！/usr/bin/python2.6.6</li>
+</ul>
+<h3 id="安装新pip"><a href="#安装新pip" class="headerlink" title="安装新pip"></a>安装新pip</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">$</span><span class="bash"> wget https://pypi.python.org/packages/<span class="built_in">source</span>/p/pip/pip-1.3.1.tar.gz --no-check-certificate</span></span><br></pre></td></tr></table></figure>
+<h4 id="解压安装pip"><a href="#解压安装pip" class="headerlink" title="解压安装pip"></a>解压安装pip</h4><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">chmod +x pip-1.3.1.tar.gz</span><br><span class="line">tar xzvf pip-1.3.1.tar.gz</span><br><span class="line">cd pip-1.3.1</span><br><span class="line">python setup.py install</span><br></pre></td></tr></table></figure>
+<h4 id="查看pip安装"><a href="#查看pip安装" class="headerlink" title="查看pip安装"></a>查看pip安装</h4><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pip -V</span><br></pre></td></tr></table></figure>
+<ul>
+<li>pip 1.3.1 from /usr/local/lib/python3.6/site-packages/pip-1.3.1-py3.6.egg (python 3.6)</li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Centos/" rel="tag"># Centos</a>
+              <a href="/tags/Python/" rel="tag"># Python</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2017/05/03/%E7%8E%A9%E8%BD%ACHDFS-ACL/" rel="prev" title="Hadoop_玩转 HDFS之 ACL">
+      <i class="fa fa-chevron-left"></i> Hadoop_玩转 HDFS之 ACL
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2017/06/25/Bash%E8%B0%83%E7%94%A8MySql/" rel="next" title="Bash/Shell调用MySQL并忽略警告">
+      Bash/Shell调用MySQL并忽略警告 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%AD%A4%E6%AC%A1%E5%8D%87%E7%BA%A7%E4%BF%9D%E7%95%99%E6%97%A7%E7%89%88%E6%9C%AC%E7%9A%84%E7%8E%AF%E5%A2%83%E3%80%82"><span class="nav-number">1.</span> <span class="nav-text">此次升级保留旧版本的环境。</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%85%8D%E7%BD%AE%E7%B3%BB%E7%BB%9F%E7%8E%AF%E5%A2%83"><span class="nav-number">2.</span> <span class="nav-text">配置系统环境</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AE%89%E8%A3%85%E5%BC%80%E5%8F%91%E5%B7%A5%E5%85%B7"><span class="nav-number">2.1.</span> <span class="nav-text">安装开发工具</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AE%89%E8%A3%85python3%E8%A7%A3%E7%A0%81%E6%94%AF%E6%8C%81%E5%8C%85"><span class="nav-number">2.2.</span> <span class="nav-text">安装python3解码支持包</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%87%86%E5%A4%87%E6%9B%B4%E6%96%B0%E7%89%88%E6%9C%AC"><span class="nav-number">3.</span> <span class="nav-text">准备更新版本</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%AA%8C%E8%AF%81%E5%8E%9F%E6%9C%89%E7%9A%84python%E7%89%88%E6%9C%AC"><span class="nav-number">3.1.</span> <span class="nav-text">验证原有的python版本</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%8B%E8%BD%BDpython3-6-0%E5%8C%85"><span class="nav-number">3.2.</span> <span class="nav-text">下载python3.6.0包</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%A7%A3%E5%8E%8B%E7%BC%96%E8%AF%91python%E5%AE%89%E8%A3%85%E5%8C%85"><span class="nav-number">3.3.</span> <span class="nav-text">解压编译python安装包</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%A7%A3%E5%8E%8B"><span class="nav-number">3.3.1.</span> <span class="nav-text">解压</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%BC%96%E8%AF%91"><span class="nav-number">3.3.2.</span> <span class="nav-text">编译</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%89%A7%E8%A1%8C%E5%AE%89%E8%A3%85"><span class="nav-number">3.4.</span> <span class="nav-text">执行安装</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%BB%BA%E7%AB%8B%E8%BD%AF%E8%BF%9E%E6%8E%A5-%E5%B0%B1%E6%98%AF%E5%BF%AB%E6%8D%B7%E6%96%B9%E5%BC%8F"><span class="nav-number">3.5.</span> <span class="nav-text">建立软连接(就是快捷方式)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#yum%E6%8C%87%E4%BB%A4%E4%BC%9A%E6%8A%A5%E9%94%99%EF%BC%8C%E5%B0%86%E5%85%B6%E9%87%8D%E6%96%B0%E6%8C%87%E5%90%91%E6%97%A7%E7%89%88%E6%9C%AC%E7%9A%84python"><span class="nav-number">3.6.</span> <span class="nav-text">yum指令会报错，将其重新指向旧版本的python</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AE%89%E8%A3%85%E6%96%B0pip"><span class="nav-number">3.7.</span> <span class="nav-text">安装新pip</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%A7%A3%E5%8E%8B%E5%AE%89%E8%A3%85pip"><span class="nav-number">3.7.1.</span> <span class="nav-text">解压安装pip</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%9F%A5%E7%9C%8Bpip%E5%AE%89%E8%A3%85"><span class="nav-number">3.7.2.</span> <span class="nav-text">查看pip安装</span></a></li></ol></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">忘了</p>
+  <div class="site-description" itemprop="description">指尖悦动，代码跳舞。</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">14</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">10</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">15</span>
+        <span class="site-state-item-name">tags</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/gmle" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;gmle" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:e.le.lee.leee@gmail.com" title="E-Mail → mailto:e.le.lee.leee@gmail.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2015 – 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">忘了</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

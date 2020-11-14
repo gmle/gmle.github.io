@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon.ico">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.ico">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"example.com","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="fastDFS是用c写的一款开源的分布式文件系统，可以很容易地搭建一套分布式文件系统。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="fastDFS使用与介绍">
+<meta property="og:url" content="http://example.com/2018/10/14/fastDFS/index.html">
+<meta property="og:site_name" content="忘了">
+<meta property="og:description" content="fastDFS是用c写的一款开源的分布式文件系统，可以很容易地搭建一套分布式文件系统。">
+<meta property="og:locale">
+<meta property="article:published_time" content="2018-10-14T02:21:43.000Z">
+<meta property="article:modified_time" content="2018-10-15T07:31:52.000Z">
+<meta property="article:author" content="忘了">
+<meta property="article:tag" content="fastDFS">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://example.com/2018/10/14/fastDFS/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-Hans'
+  };
+</script>
+
+  <title>fastDFS使用与介绍 | 忘了</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">忘了</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>About</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>Tags</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>Categories</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2018/10/14/fastDFS/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="忘了">
+      <meta itemprop="description" content="指尖悦动，代码跳舞。">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="忘了">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          fastDFS使用与介绍
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2018-10-14 10:21:43" itemprop="dateCreated datePublished" datetime="2018-10-14T10:21:43+08:00">2018-10-14</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2018-10-15 15:31:52" itemprop="dateModified" datetime="2018-10-15T15:31:52+08:00">2018-10-15</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/fastDFS/" itemprop="url" rel="index"><span itemprop="name">fastDFS</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>fastDFS是用c写的一款开源的分布式文件系统，可以很容易地搭建一套分布式文件系统。</p>
+<a id="more"></a>
+
+<h2 id="fastDFS中的三个角色"><a href="#fastDFS中的三个角色" class="headerlink" title="fastDFS中的三个角色"></a>fastDFS中的三个角色</h2><ul>
+<li>追踪器(Tracker)-&gt;管理者：管理存储节点，类似于Hadoop中的namenode<ul>
+<li>需要多个Tracker以避免单点故障</li>
+<li>与Hadoop不同的是Tracker是以轮询的方式实现的</li>
+</ul>
+</li>
+<li>存储节点(storage)-&gt;存储节点：存储数据，类似于Hadoop中的DataNode</li>
+<li>(实现)客户端(client)-&gt;界面管理：上传下载功能的实现</li>
+</ul>
+<h2 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h2><p>下载 libfastcommon与fastdfs<br>安装过程相同：<br>​    先安装libfastcommon<br>​    ./make.sh &amp;&amp; ./make.sh install<br>​    再安装fastdfs<br>​    ./make.sh &amp;&amp; ./make.sh install</p>
+<h2 id="工作顺序"><a href="#工作顺序" class="headerlink" title="工作顺序"></a>工作顺序</h2><ul>
+<li>启动Tracker<ul>
+<li>Tracker接收storage的心跳信息并与其建立映射</li>
+</ul>
+</li>
+<li>启动storage<ul>
+<li>单独开启一个线程<ul>
+<li>汇报节点状态</li>
+<li>汇报当前存储节点的磁盘信息</li>
+<li>汇报数据同步情况</li>
+<li>汇报数据被下载的次数</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>启动客户端<ul>
+<li>上传<ul>
+<li>连接Tracker，询问存储节点信息</li>
+<li>Tracker查询符合上传文件大小的存储节点并返回节点信息</li>
+<li>Tracker将节点信息返回给client</li>
+<li>(集群)选择需要连接的Tracker</li>
+<li>发送文件</li>
+<li>选择存储的group</li>
+<li>存储上传文件后返回的一个文件地址</li>
+</ul>
+</li>
+<li>下载<ul>
+<li>连接Tracker，查询文件所在节点</li>
+<li>Tracker返回存储文件的节点信息，返回节点的ip:端口</li>
+<li>(集群)选择需要连接的Tracker</li>
+<li>下载文件</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h2 id="测试安装"><a href="#测试安装" class="headerlink" title="测试安装"></a>测试安装</h2><h3 id="安装-1"><a href="#安装-1" class="headerlink" title="安装"></a>安装</h3><p>libfastcommon-1.36.zip（fastdfs的基础库包 ）</p>
+<ul>
+<li>unzip libfastcommon-1.36.zip </li>
+<li>./make.sh </li>
+<li>./make.sh install</li>
+</ul>
+<p>fastdfs-5.10.tar.gz<br>​    tar zxvf fastdfs-5.10.tar.gz<br>​    ./make.sh<br>​    ./make.sh install</p>
+<h3 id="测试"><a href="#测试" class="headerlink" title="测试"></a>测试</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash">fastDFS安装的所有的可执行程序: /usr/bin/fdfs_*</span></span><br><span class="line">fdfs_test</span><br></pre></td></tr></table></figure>
+
+<h3 id="fastDFS配置文件"><a href="#fastDFS配置文件" class="headerlink" title="fastDFS配置文件"></a>fastDFS配置文件</h3><hr>
+<p>配置文件默认位置: /etc/fdfs</p>
+<ul>
+<li>client.conf.sample</li>
+<li>storage.conf.sample</li>
+<li>storage_ids.conf.sample</li>
+<li>tracker.conf.sample</li>
+</ul>
+<hr>
+<h4 id="tracker-conf"><a href="#tracker-conf" class="headerlink" title="tracker.conf"></a>tracker.conf</h4><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> 将追踪器和部署的主机的IP地址进程绑定, 也可以不指定</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 如果不指定, 会自动绑定当前主机IP, 如果是云服务器建议不要写 bind_addr=192.168.247.135</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 追踪器监听的端口</span></span><br><span class="line">port=22122</span><br><span class="line"><span class="meta">#</span><span class="bash"> 追踪器存储日志信息的目录, xxx.pid文件, 必须是一个存在的目录 base_path=/home/yuqing/fastdfs</span></span><br></pre></td></tr></table></figure>
+
+<h4 id="storage-conf"><a href="#storage-conf" class="headerlink" title="storage.conf"></a>storage.conf</h4><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> 当前存储节点对应的主机属于哪一个组 group_name=group1</span></span><br><span class="line">  group_name=group1</span><br><span class="line"><span class="meta">#</span><span class="bash"> 当前存储节点和所应该的主机进行IP地址的绑定, 如果不写, 有fastdfs自动绑定 bind_addr=</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 存储节点绑定的端口</span></span><br><span class="line">port=23000</span><br><span class="line"><span class="meta">#</span><span class="bash"> 存储节点写<span class="built_in">log</span>日志的路径 base_path=/home/yuqing/fastdfs</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 存储节点提供的存储文件的路径个数 store_path_count=2</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 具体的存储路径 store_path0=/home/yuqing/fastdfs store_path1=/home/yuqing/fastdfs1</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 追踪器的地址信息 tracker_server=192.168.247.135:22122 tracker_server=192.168.247.136:22122</span></span><br><span class="line">tracker_server=192.168.247.135:22122</span><br><span class="line">tracker_server=192.168.247.136:22122</span><br></pre></td></tr></table></figure>
+
+<h4 id="client-conf"><a href="#client-conf" class="headerlink" title="client.conf"></a>client.conf</h4><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> 客户端写<span class="built_in">log</span>日志的目录</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 该路径必须存在</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 当前的用户对于该路径中的文件有读写权限</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 当前用户robin</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 指定的路径属于root base_path=/home/yuqing/fastdfs</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 要连接的追踪器的地址信息 tracker_server=192.168.247.135:22122 tracker_server=192.168.247.136:22122</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="启动"><a href="#启动" class="headerlink" title="启动"></a>启动</h3><h4 id="tracker追踪器的启动"><a href="#tracker追踪器的启动" class="headerlink" title="tracker追踪器的启动"></a>tracker追踪器的启动</h4><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> 启动程序在 /usr/bin/fdfs_*</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 启动</span></span><br><span class="line">fdfs_trackerd 追踪器的配置文件(/etc/fdfs/tracker.conf)</span><br><span class="line"><span class="meta">#</span><span class="bash"> 关闭</span></span><br><span class="line">fdfs_trackerd 追踪器的配置文件(/etc/fdfs/tracker.conf) stop</span><br><span class="line"><span class="meta">#</span><span class="bash"> 重启</span></span><br><span class="line">fdfs_trackerd 追踪器的配置文件(/etc/fdfs/tracker.conf) restart</span><br></pre></td></tr></table></figure>
+
+<h4 id="storage存储节点的启动"><a href="#storage存储节点的启动" class="headerlink" title="storage存储节点的启动"></a>storage存储节点的启动</h4><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> 启动</span></span><br><span class="line">fdfs_storaged 存储节点的配置文件(/etc/fdfs/stroga.conf)</span><br><span class="line"><span class="meta">#</span><span class="bash"> 关闭</span></span><br><span class="line">fdfs_storaged 存储节点的配置文件(/etc/fdfs/stroga.conf) stop</span><br><span class="line"><span class="meta">#</span><span class="bash"> 重启</span></span><br><span class="line">fdfs_storaged 存储节点的配置文件(/etc/fdfs/stroga.conf) restart</span><br></pre></td></tr></table></figure>
+
+<h4 id="client客户端启动"><a href="#client客户端启动" class="headerlink" title="client客户端启动"></a>client客户端启动</h4><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> 上传</span></span><br><span class="line">fdfs_upload_file 客户端的配置文件(/etc/fdfs/client.conf) 要上传的文件</span><br><span class="line"><span class="meta">#</span><span class="bash"> 得到的结果字符串: group1/M00/00/00/wKj3h1vC-PuAJ09iAAAHT1YnUNE31352.c</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 下载</span></span><br><span class="line">fdfs_download_file 客户端的配置文件(/etc/fdfs/client.conf) 上传成功之后得到的字符串(fileID)</span><br><span class="line">  </span><br></pre></td></tr></table></figure>
+
+<h4 id="fastdfs状态检测"><a href="#fastdfs状态检测" class="headerlink" title="fastdfs状态检测"></a>fastdfs状态检测</h4><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> 检测命令</span></span><br><span class="line">fdfs_monitor /etc/fdfs/client.conf</span><br></pre></td></tr></table></figure>
+
+<p>storage的七种状态</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> FDFS_STORAGE_STATUS:INIT:初始化，尚未得到同步已有数据的源服务器</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> FDFS_STORAGE_STATUS:WAIT_SYNC :等待同步，已得到同步已有数据的源服务器</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> FDFS_STORAGE_STATUS:SYNCING:同步中</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> FDFS_STORAGE_STATUS:DELETED:已删除，该服务器从本组中摘除</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> FDFS_STORAGE_STATUS:OFFLINE:离线</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> FDFS_STORAGE_STATUS:ONLINE:在线，尚不能提供服务</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> FDFS_STORAGE_STATUS:ACTIVE:在线，可以提供服务</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="fileID"><a href="#fileID" class="headerlink" title="fileID"></a>fileID</h2><p>file.md -&gt; group1/M00/00/00wKhS_VlrEf0AdIZyAAAJT0wCgr43848.md</p>
+<ul>
+<li>group1<ul>
+<li>文件上传到的存储节点的哪个组</li>
+<li>如果有多个组，组名是变化的</li>
+</ul>
+</li>
+<li>M00<ul>
+<li>虚拟目录</li>
+<li>和存储节点的配置项映射<ul>
+<li>store_path0=/home/yuqing/fastdfs/data -&gt; M00</li>
+<li>store_path1=/home/yuqing/fastdfs1/data -&gt; M01</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>00/00<ul>
+<li>实际路径</li>
+<li>可变</li>
+</ul>
+</li>
+<li>wKhS_VlrEfOAdIZyAAAJTOwCGr43848.md<ul>
+<li>文件名包含的信息，</li>
+<li>Base64编码，信息包括：<ul>
+<li>源storage server ip地址</li>
+<li>文件创建时间</li>
+<li>文件大小</li>
+<li>文件CRC32校验码<ul>
+<li>循环冗余校验</li>
+</ul>
+</li>
+<li>随机数</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/fastDFS/" rel="tag"># fastDFS</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2018/09/18/%E7%BB%93%E6%9E%84%E4%BD%93%E6%95%B0%E6%8D%AE%E5%AF%B9%E9%BD%90/" rel="prev" title="结构体数据对齐详解">
+      <i class="fa fa-chevron-left"></i> 结构体数据对齐详解
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2018/10/18/linux-shebang%E8%AF%A6%E8%A7%A3/" rel="next" title="Linux-shebang">
+      Linux-shebang <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#fastDFS%E4%B8%AD%E7%9A%84%E4%B8%89%E4%B8%AA%E8%A7%92%E8%89%B2"><span class="nav-number">1.</span> <span class="nav-text">fastDFS中的三个角色</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%89%E8%A3%85"><span class="nav-number">2.</span> <span class="nav-text">安装</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%B7%A5%E4%BD%9C%E9%A1%BA%E5%BA%8F"><span class="nav-number">3.</span> <span class="nav-text">工作顺序</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%B5%8B%E8%AF%95%E5%AE%89%E8%A3%85"><span class="nav-number">4.</span> <span class="nav-text">测试安装</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AE%89%E8%A3%85-1"><span class="nav-number">4.1.</span> <span class="nav-text">安装</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%B5%8B%E8%AF%95"><span class="nav-number">4.2.</span> <span class="nav-text">测试</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#fastDFS%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6"><span class="nav-number">4.3.</span> <span class="nav-text">fastDFS配置文件</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#tracker-conf"><span class="nav-number">4.3.1.</span> <span class="nav-text">tracker.conf</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#storage-conf"><span class="nav-number">4.3.2.</span> <span class="nav-text">storage.conf</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#client-conf"><span class="nav-number">4.3.3.</span> <span class="nav-text">client.conf</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%90%AF%E5%8A%A8"><span class="nav-number">4.4.</span> <span class="nav-text">启动</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#tracker%E8%BF%BD%E8%B8%AA%E5%99%A8%E7%9A%84%E5%90%AF%E5%8A%A8"><span class="nav-number">4.4.1.</span> <span class="nav-text">tracker追踪器的启动</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#storage%E5%AD%98%E5%82%A8%E8%8A%82%E7%82%B9%E7%9A%84%E5%90%AF%E5%8A%A8"><span class="nav-number">4.4.2.</span> <span class="nav-text">storage存储节点的启动</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#client%E5%AE%A2%E6%88%B7%E7%AB%AF%E5%90%AF%E5%8A%A8"><span class="nav-number">4.4.3.</span> <span class="nav-text">client客户端启动</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#fastdfs%E7%8A%B6%E6%80%81%E6%A3%80%E6%B5%8B"><span class="nav-number">4.4.4.</span> <span class="nav-text">fastdfs状态检测</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#fileID"><span class="nav-number">5.</span> <span class="nav-text">fileID</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">忘了</p>
+  <div class="site-description" itemprop="description">指尖悦动，代码跳舞。</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">14</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">10</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">15</span>
+        <span class="site-state-item-name">tags</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/gmle" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;gmle" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:e.le.lee.leee@gmail.com" title="E-Mail → mailto:e.le.lee.leee@gmail.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2015 – 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">忘了</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

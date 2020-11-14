@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon.ico">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.ico">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"example.com","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="关于 HA 中 Spark worker节点连接Master的问题">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Spark-HA的worker问题">
+<meta property="og:url" content="http://example.com/2017/11/06/Spark-HA%E7%9A%84worker%E9%97%AE%E9%A2%98/index.html">
+<meta property="og:site_name" content="忘了">
+<meta property="og:description" content="关于 HA 中 Spark worker节点连接Master的问题">
+<meta property="og:locale">
+<meta property="article:published_time" content="2017-11-06T08:39:00.000Z">
+<meta property="article:modified_time" content="2017-11-06T08:39:00.000Z">
+<meta property="article:author" content="忘了">
+<meta property="article:tag" content="Shell">
+<meta property="article:tag" content="Linux">
+<meta property="article:tag" content="Spark">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://example.com/2017/11/06/Spark-HA%E7%9A%84worker%E9%97%AE%E9%A2%98/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-Hans'
+  };
+</script>
+
+  <title>Spark-HA的worker问题 | 忘了</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">忘了</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>About</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>Tags</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>Categories</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2017/11/06/Spark-HA%E7%9A%84worker%E9%97%AE%E9%A2%98/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="忘了">
+      <meta itemprop="description" content="指尖悦动，代码跳舞。">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="忘了">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Spark-HA的worker问题
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2017-11-06 16:39:00" itemprop="dateCreated datePublished" datetime="2017-11-06T16:39:00+08:00">2017-11-06</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Spark/" itemprop="url" rel="index"><span itemprop="name">Spark</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>关于 HA 中 Spark worker节点连接Master的问题</p>
+<a id="more"></a>
+
+<h2 id="问题：Spark-Woker-不去连接ALIVE-Master"><a href="#问题：Spark-Woker-不去连接ALIVE-Master" class="headerlink" title="问题：Spark Woker 不去连接ALIVE Master"></a>问题：Spark Woker 不去连接ALIVE Master</h2><p>机器：</p>
+<ul>
+<li><p>192.168.1.128 Master</p>
+</li>
+<li><p>192.168.1.129 Master Worker</p>
+</li>
+<li><p>192.168.1.130 Worker</p>
+<p>启动时两个Master的状态不可控，不知道哪个是ALIVE的Master，worker节点在连接Master的时候，会判断当前Master的状态是否为ALIVE，如果为StandBy，则不继续链接，然后去寻找ALIVE，直到找到ALIVE节点的MASTER。</p>
+<p>现在的问题是 Worker在找到StandBy节点后，并没有去寻找新的Master，导致了worker注册不到集群上，自动关闭。</p>
+<p>原因待定。</p>
+<p>根据一些帖子发现，如果配置了Spark on yarn ，则 Spark HA 基本没有任何作用。</p>
+</li>
+</ul>
+<!-- more -->
+<p>错误日志</p>
+<ul>
+<li>Terminal<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br></pre></td><td class="code"><pre><span class="line">Using Spark&#x27;s default log4j profile: org/apache/spark/log4j-defaults.properties</span><br><span class="line">17/10/09 13:05:08 INFO Worker: Registered signal handlers for [TERM, HUP, INT]</span><br><span class="line">17/10/09 13:05:09 WARN NativeCodeLoader: Unable to load native-hadoop library for your platform... using builtin-java classes where applicable</span><br><span class="line">17/10/09 13:05:09 INFO SecurityManager: Changing view acls to: root</span><br><span class="line">17/10/09 13:05:09 INFO SecurityManager: Changing modify acls to: root</span><br><span class="line">17/10/09 13:05:09 INFO SecurityManager: SecurityManager: authentication disabled; ui acls disabled; users with view permissions: Set(root); users with modify permissions: Set(root)</span><br><span class="line">17/10/09 13:05:10 INFO Utils: Successfully started service &#x27;sparkWorker&#x27; on port 39766.</span><br><span class="line">17/10/09 13:05:10 INFO Worker: Starting Spark worker 192.168.10.129:39766 with 4 cores, 4.0 GB RAM</span><br><span class="line">17/10/09 13:05:10 INFO Worker: Running Spark version 1.6.0</span><br><span class="line">17/10/09 13:05:10 INFO Worker: Spark home: /opt/dkh/spark-1.6.0-bin-hadoop2.6</span><br><span class="line">17/10/09 13:05:11 INFO Utils: Successfully started service &#x27;WorkerUI&#x27; on port 8081.</span><br><span class="line">17/10/09 13:05:11 INFO WorkerWebUI: Started WorkerWebUI at http://192.168.10.129:8081</span><br><span class="line">17/10/09 13:05:11 INFO Worker: Connecting to master dkm:7077...</span><br><span class="line">17/10/09 13:05:11 WARN Worker: Failed to connect to master dkm:7077</span><br><span class="line">java.io.IOException: Failed to connect to dkm/192.168.10.128:7077</span><br><span class="line">	at org.apache.spark.network.client.TransportClientFactory.createClient(TransportClientFactory.java:216)</span><br><span class="line">	at org.apache.spark.network.client.TransportClientFactory.createClient(TransportClientFactory.java:167)</span><br><span class="line">	at org.apache.spark.rpc.netty.NettyRpcEnv.createClient(NettyRpcEnv.scala:200)</span><br><span class="line">	at org.apache.spark.rpc.netty.Outbox$$anon$1.call(Outbox.scala:187)</span><br><span class="line">	at org.apache.spark.rpc.netty.Outbox$$anon$1.call(Outbox.scala:183)</span><br><span class="line">	at java.util.concurrent.FutureTask.run(FutureTask.java:262)</span><br><span class="line">	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1145)</span><br><span class="line">	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:615)</span><br><span class="line">	at java.lang.Thread.run(Thread.java:745)</span><br><span class="line">Caused by: java.net.ConnectException: 拒绝连接: dkm/192.168.10.128:7077</span><br><span class="line">	at sun.nio.ch.SocketChannelImpl.checkConnect(Native Method)</span><br><span class="line">	at sun.nio.ch.SocketChannelImpl.finishConnect(SocketChannelImpl.java:739)</span><br><span class="line">	at io.netty.channel.socket.nio.NioSocketChannel.doFinishConnect(NioSocketChannel.java:224)</span><br><span class="line">	at io.netty.channel.nio.AbstractNioChannel$AbstractNioUnsafe.finishConnect(AbstractNioChannel.java:289)</span><br><span class="line">	at io.netty.channel.nio.NioEventLoop.processSelectedKey(NioEventLoop.java:528)</span><br><span class="line">	at io.netty.channel.nio.NioEventLoop.processSelectedKeysOptimized(NioEventLoop.java:468)</span><br><span class="line">	at io.netty.channel.nio.NioEventLoop.processSelectedKeys(NioEventLoop.java:382)</span><br><span class="line">	at io.netty.channel.nio.NioEventLoop.run(NioEventLoop.java:354)</span><br><span class="line">	at io.netty.util.concurrent.SingleThreadEventExecutor$2.run(SingleThreadEventExecutor.java:111)</span><br><span class="line">	... 1 more</span><br><span class="line">17/10/09 13:05:24 INFO Worker: Retrying connection to master (attempt # 1)</span><br><span class="line">17/10/09 13:05:24 INFO Worker: Connecting to master dkm:7077...</span><br><span class="line">17/10/09 13:05:37 INFO Worker: Retrying connection to master (attempt # 2)</span><br><span class="line">17/10/09 13:05:37 INFO Worker: Connecting to master dkm:7077...</span><br><span class="line">17/10/09 13:05:50 INFO Worker: Retrying connection to master (attempt # 3)</span><br><span class="line">17/10/09 13:05:50 INFO Worker: Connecting to master dkm:7077...</span><br><span class="line">17/10/09 13:06:03 INFO Worker: Retrying connection to master (attempt # 4)</span><br><span class="line">17/10/09 13:06:03 INFO Worker: Connecting to master dkm:7077...</span><br><span class="line">17/10/09 13:06:16 INFO Worker: Retrying connection to master (attempt # 5)</span><br><span class="line">17/10/09 13:06:16 INFO Worker: Connecting to master dkm:7077...</span><br><span class="line">17/10/09 13:06:29 INFO Worker: Retrying connection to master (attempt # 6)</span><br><span class="line">17/10/09 13:06:29 INFO Worker: Connecting to master dkm:7077...</span><br><span class="line">17/10/09 13:07:47 INFO Worker: Retrying connection to master (attempt # 7)</span><br><span class="line">17/10/09 13:07:47 INFO Worker: Connecting to master dkm:7077...</span><br><span class="line">17/10/09 13:09:05 INFO Worker: Retrying connection to master (attempt # 8)</span><br><span class="line">17/10/09 13:09:05 INFO Worker: Connecting to master dkm:7077...</span><br><span class="line">17/10/09 13:10:23 INFO Worker: Retrying connection to master (attempt # 9)</span><br><span class="line">17/10/09 13:10:23 INFO Worker: Connecting to master dkm:7077...</span><br><span class="line">17/10/09 13:11:41 INFO Worker: Retrying connection to master (attempt # 10)</span><br><span class="line">17/10/09 13:11:41 INFO Worker: Connecting to master dkm:7077...</span><br><span class="line">17/10/09 13:12:59 INFO Worker: Retrying connection to master (attempt # 11)</span><br><span class="line">17/10/09 13:12:59 INFO Worker: Connecting to master dkm:7077...</span><br><span class="line">17/10/09 13:14:17 INFO Worker: Retrying connection to master (attempt # 12)</span><br><span class="line">17/10/09 13:14:17 INFO Worker: Connecting to master dkm:7077...</span><br><span class="line">17/10/09 13:15:35 INFO Worker: Retrying connection to master (attempt # 13)</span><br><span class="line">17/10/09 13:15:35 INFO Worker: Connecting to master dkm:7077...</span><br><span class="line">17/10/09 13:16:53 INFO Worker: Retrying connection to master (attempt # 14)</span><br><span class="line">17/10/09 13:16:53 INFO Worker: Connecting to master dkm:7077...</span><br><span class="line">17/10/09 13:18:11 INFO Worker: Retrying connection to master (attempt # 15)</span><br><span class="line">17/10/09 13:18:11 INFO Worker: Connecting to master dkm:7077...</span><br><span class="line">17/10/09 13:19:29 INFO Worker: Retrying connection to master (attempt # 16)</span><br><span class="line">17/10/09 13:19:29 INFO Worker: Connecting to master dkm:7077...</span><br><span class="line">17/10/09 13:20:47 ERROR Worker: All masters are unresponsive! Giving up.</span><br></pre></td></tr></table></figure>
+既然如此，那干脆不启动第二个Master，Start-all 后，会发现集群正常，但是没有第二个Master。</li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Shell/" rel="tag"># Shell</a>
+              <a href="/tags/Linux/" rel="tag"># Linux</a>
+              <a href="/tags/Spark/" rel="tag"># Spark</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2017/09/12/yum%E4%B8%80%E9%94%AE%E5%AE%89%E8%A3%85maven/" rel="prev" title="Maven一键安装 centos平台">
+      <i class="fa fa-chevron-left"></i> Maven一键安装 centos平台
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2017/11/06/%E5%85%B3%E4%BA%8ESpark%E7%8E%AF%E5%A2%83%E5%8F%98%E9%87%8F%E9%97%AE%E9%A2%98/" rel="next" title="关于Spark环境变量问题">
+      关于Spark环境变量问题 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%97%AE%E9%A2%98%EF%BC%9ASpark-Woker-%E4%B8%8D%E5%8E%BB%E8%BF%9E%E6%8E%A5ALIVE-Master"><span class="nav-number">1.</span> <span class="nav-text">问题：Spark Woker 不去连接ALIVE Master</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">忘了</p>
+  <div class="site-description" itemprop="description">指尖悦动，代码跳舞。</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">14</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">10</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">15</span>
+        <span class="site-state-item-name">tags</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/gmle" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;gmle" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:e.le.lee.leee@gmail.com" title="E-Mail → mailto:e.le.lee.leee@gmail.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2015 – 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">忘了</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon.ico">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.ico">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"example.com","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="首先，准备MacOS环境略过Java、Scala、Python的环境安装，从Hadoop和Spark说起">
+<meta property="og:type" content="article">
+<meta property="og:title" content="MacOS下配置Hadoop和Spark">
+<meta property="og:url" content="http://example.com/2017/05/03/MacOS%E5%AE%89%E8%A3%85Hadoop&Spark/index.html">
+<meta property="og:site_name" content="忘了">
+<meta property="og:description" content="首先，准备MacOS环境略过Java、Scala、Python的环境安装，从Hadoop和Spark说起">
+<meta property="og:locale">
+<meta property="article:published_time" content="2017-05-03T06:37:38.000Z">
+<meta property="article:modified_time" content="2017-05-03T06:37:38.000Z">
+<meta property="article:author" content="忘了">
+<meta property="article:tag" content="Spark">
+<meta property="article:tag" content="MacOS">
+<meta property="article:tag" content="Hadoop">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://example.com/2017/05/03/MacOS%E5%AE%89%E8%A3%85Hadoop&Spark/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-Hans'
+  };
+</script>
+
+  <title>MacOS下配置Hadoop和Spark | 忘了</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">忘了</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>About</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>Tags</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>Categories</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2017/05/03/MacOS%E5%AE%89%E8%A3%85Hadoop&Spark/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="忘了">
+      <meta itemprop="description" content="指尖悦动，代码跳舞。">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="忘了">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          MacOS下配置Hadoop和Spark
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2017-05-03 14:37:38" itemprop="dateCreated datePublished" datetime="2017-05-03T14:37:38+08:00">2017-05-03</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/MacOS/" itemprop="url" rel="index"><span itemprop="name">MacOS</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h2 id="首先，准备MacOS环境"><a href="#首先，准备MacOS环境" class="headerlink" title="首先，准备MacOS环境"></a>首先，准备MacOS环境</h2><pre><code>略过Java、Scala、Python的环境安装，从Hadoop和Spark说起</code></pre>
+<a id="more"></a>
+<h2 id="安装Hadoop"><a href="#安装Hadoop" class="headerlink" title="安装Hadoop"></a>安装Hadoop</h2><p>安装Hadoop，最简单的安装方式：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">brew install hadoop  </span><br></pre></td></tr></table></figure>
+<h4 id="找到安装目录"><a href="#找到安装目录" class="headerlink" title="找到安装目录"></a>找到安装目录</h4><pre><code>安装完成后，找到Hadoop配置文件目录：</code></pre>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">cd</span> /usr/<span class="built_in">local</span>/Cellar/hadoop/2.7.3/libexec/etc/hadoop  </span><br></pre></td></tr></table></figure>
+<h4 id="修改core-site-xml"><a href="#修改core-site-xml" class="headerlink" title="修改core-site.xml"></a>修改core-site.xml</h4><figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">configuration</span>&gt;</span>  </span><br><span class="line">        <span class="tag">&lt;<span class="name">property</span>&gt;</span>  </span><br><span class="line">                <span class="tag">&lt;<span class="name">name</span>&gt;</span>hadoop.tmp.dir<span class="tag">&lt;/<span class="name">name</span>&gt;</span>  </span><br><span class="line">                <span class="tag">&lt;<span class="name">value</span>&gt;</span>file:/usr/local/Cellar/hadoop/2.7.3/libexec/tmp<span class="tag">&lt;/<span class="name">value</span>&gt;</span>  </span><br><span class="line">        <span class="tag">&lt;/<span class="name">property</span>&gt;</span>  </span><br><span class="line">        <span class="tag">&lt;<span class="name">property</span>&gt;</span>  </span><br><span class="line">                <span class="tag">&lt;<span class="name">name</span>&gt;</span>fs.defaultFS<span class="tag">&lt;/<span class="name">name</span>&gt;</span>  </span><br><span class="line">                <span class="tag">&lt;<span class="name">value</span>&gt;</span>hdfs://localhost:8020<span class="tag">&lt;/<span class="name">value</span>&gt;</span>  </span><br><span class="line">        <span class="tag">&lt;/<span class="name">property</span>&gt;</span>  </span><br><span class="line"><span class="tag">&lt;/<span class="name">configuration</span>&gt;</span>  </span><br></pre></td></tr></table></figure>
+<h4 id="修改hdfs-site-xml"><a href="#修改hdfs-site-xml" class="headerlink" title="修改hdfs-site.xml"></a>修改hdfs-site.xml</h4><figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">configuration</span>&gt;</span>  </span><br><span class="line">        <span class="tag">&lt;<span class="name">property</span>&gt;</span>  </span><br><span class="line">                <span class="tag">&lt;<span class="name">name</span>&gt;</span>dfs.replication<span class="tag">&lt;/<span class="name">name</span>&gt;</span>  </span><br><span class="line">                <span class="tag">&lt;<span class="name">value</span>&gt;</span>1<span class="tag">&lt;/<span class="name">value</span>&gt;</span>  </span><br><span class="line">        <span class="tag">&lt;/<span class="name">property</span>&gt;</span>  </span><br><span class="line">        <span class="tag">&lt;<span class="name">property</span>&gt;</span>  </span><br><span class="line">                <span class="tag">&lt;<span class="name">name</span>&gt;</span>dfs.namenode.name.dir<span class="tag">&lt;/<span class="name">name</span>&gt;</span>  </span><br><span class="line">                <span class="tag">&lt;<span class="name">value</span>&gt;</span>file:/usr/local/Cellar/hadoop/2.7.3/libexec/tmp/dfs/name<span class="tag">&lt;/<span class="name">value</span>&gt;</span>  </span><br><span class="line">        <span class="tag">&lt;/<span class="name">property</span>&gt;</span>  </span><br><span class="line">        <span class="tag">&lt;<span class="name">property</span>&gt;</span>  </span><br><span class="line">                <span class="tag">&lt;<span class="name">name</span>&gt;</span>dfs.namenode.data.dir<span class="tag">&lt;/<span class="name">name</span>&gt;</span>  </span><br><span class="line">                <span class="tag">&lt;<span class="name">value</span>&gt;</span>file:/usr/local/Cellar/hadoop/2.7.3/libexec/tmp/dfs/data<span class="tag">&lt;/<span class="name">value</span>&gt;</span>  </span><br><span class="line">        <span class="tag">&lt;/<span class="name">property</span>&gt;</span>  </span><br><span class="line"><span class="tag">&lt;/<span class="name">configuration</span>&gt;</span> </span><br></pre></td></tr></table></figure>
+<h4 id="添加环境变量"><a href="#添加环境变量" class="headerlink" title="添加环境变量"></a>添加环境变量</h4><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#Hadoop environment configs  </span></span><br><span class="line"><span class="built_in">export</span> HADOOP_HOME=/usr/<span class="built_in">local</span>/Cellar/hadoop/2.7.3/libexec  </span><br><span class="line"><span class="built_in">export</span> PATH=<span class="variable">$PATH</span>:<span class="variable">$&#123;HADOOP_HOME&#125;</span>/bin  </span><br></pre></td></tr></table></figure>
+
+<h4 id="格式化HDFS"><a href="#格式化HDFS" class="headerlink" title="格式化HDFS"></a>格式化HDFS</h4><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">cd</span> /usr/<span class="built_in">local</span>/Cellar/hadoop/2.7.3/bin  </span><br><span class="line">./hdfs namenode -format</span><br></pre></td></tr></table></figure>
+<h4 id="启动Hadoop"><a href="#启动Hadoop" class="headerlink" title="启动Hadoop"></a>启动Hadoop</h4><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">cd</span> /usr/<span class="built_in">local</span>/Cellar/hadoop/2.7.3/sbin  </span><br><span class="line">./start-all.sh </span><br></pre></td></tr></table></figure>
+<p>在终端输入 jps 查看java进程</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">1206 DataNode  </span><br><span class="line">1114 NameNode  </span><br><span class="line">1323 SecondaryNameNode</span><br></pre></td></tr></table></figure>
+
+<h2 id="安装Spark"><a href="#安装Spark" class="headerlink" title="安装Spark"></a>安装Spark</h2><p>Spark的安装也是使用 brew</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">brew install apache-spark  </span><br></pre></td></tr></table></figure>
+<h4 id="找到安装目录-1"><a href="#找到安装目录-1" class="headerlink" title="找到安装目录"></a>找到安装目录</h4><p>找到Spark配置文件目录</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">cd</span> /usr/<span class="built_in">local</span>/Cellar/apache-spark/2.1.0/libexec/conf  </span><br></pre></td></tr></table></figure>
+
+<h4 id="修改spark-env-sh"><a href="#修改spark-env-sh" class="headerlink" title="修改spark-env.sh"></a>修改spark-env.sh</h4><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">cp spark-env.sh.template spark-env.sh</span><br><span class="line">vi spark-env.sh</span><br><span class="line"><span class="built_in">export</span> SPARK_HOME=/usr/<span class="built_in">local</span>/Cellar/apache-spark/2.1.0/libexec  </span><br><span class="line"><span class="built_in">export</span> JAVA_HOME=/Library/Java/JavaVirtualMachines/jdk1.8.0_102.jdk/Contents/Home  </span><br></pre></td></tr></table></figure>
+
+<h4 id="加入环境变量"><a href="#加入环境变量" class="headerlink" title="加入环境变量"></a>加入环境变量</h4><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">export</span> SPARK_HOME=/usr/<span class="built_in">local</span>/Cellar/apache-spark/2.1.0/libexec  </span><br><span class="line"><span class="built_in">export</span> PATH=<span class="variable">$PATH</span>:<span class="variable">$&#123;SPARK_HOME&#125;</span>/bin  </span><br></pre></td></tr></table></figure>
+
+<h4 id="启动Spark"><a href="#启动Spark" class="headerlink" title="启动Spark"></a>启动Spark</h4><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">cd /usr/local/Cellar/apache-spark/1.6.0/bin  </span><br><span class="line">./start-all.sh</span><br></pre></td></tr></table></figure>
+
+<h4 id="查看进程"><a href="#查看进程" class="headerlink" title="查看进程"></a>查看进程</h4><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">jps</span><br><span class="line"></span><br><span class="line">6052 Worker</span><br><span class="line">6022 Master</span><br><span class="line">6728 Jps</span><br><span class="line">5546 NameNode</span><br><span class="line">5739 SecondaryNameNode</span><br><span class="line">5947 NodeManager</span><br><span class="line">5630 DataNode</span><br><span class="line">5855 ResourceManager</span><br></pre></td></tr></table></figure>
+
+<h2 id="配置Pycharm开发spark应用"><a href="#配置Pycharm开发spark应用" class="headerlink" title="配置Pycharm开发spark应用"></a>配置Pycharm开发spark应用</h2><p>打开Pycharm（我的python版本是2.7）<br>新建xxxx，新建类：一个简单的wordcount</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> pyspark <span class="keyword">import</span> SparkContext</span><br><span class="line"></span><br><span class="line">logFile = <span class="string">&quot;/Users/admin/Desktop/BackUp&quot;</span></span><br><span class="line">sc = SparkContext(<span class="string">&quot;local&quot;</span>,<span class="string">&quot;Simple App&quot;</span>)</span><br><span class="line">logData = sc.textFile(logFile).cache()</span><br><span class="line"></span><br><span class="line">numAs = logData.<span class="built_in">filter</span>(<span class="keyword">lambda</span> s: <span class="string">&#x27;a&#x27;</span> <span class="keyword">in</span> s).count()</span><br><span class="line">numBs = logData.<span class="built_in">filter</span>(<span class="keyword">lambda</span> s: <span class="string">&#x27;b&#x27;</span> <span class="keyword">in</span> s).count()</span><br><span class="line"></span><br><span class="line">print(<span class="string">&quot;Lines with a: %i, lines with b: %i&quot;</span>%(numAs, numBs))</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>F4打开当前可运行代码的配置项<br>Environment Variables 选项填写：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">PYTHONPATH    /usr/<span class="built_in">local</span>/Cellar/apache-spark/2.1.0/libexec/python</span><br></pre></td></tr></table></figure>
+<p>至此，环境完成。</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Spark/" rel="tag"># Spark</a>
+              <a href="/tags/MacOS/" rel="tag"># MacOS</a>
+              <a href="/tags/Hadoop/" rel="tag"># Hadoop</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item"></div>
+      <div class="post-nav-item">
+    <a href="/2017/05/03/%E7%8E%A9%E8%BD%ACHDFS-ACL/" rel="next" title="Hadoop_玩转 HDFS之 ACL">
+      Hadoop_玩转 HDFS之 ACL <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%A6%96%E5%85%88%EF%BC%8C%E5%87%86%E5%A4%87MacOS%E7%8E%AF%E5%A2%83"><span class="nav-number">1.</span> <span class="nav-text">首先，准备MacOS环境</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%89%E8%A3%85Hadoop"><span class="nav-number">2.</span> <span class="nav-text">安装Hadoop</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%89%BE%E5%88%B0%E5%AE%89%E8%A3%85%E7%9B%AE%E5%BD%95"><span class="nav-number">2.0.1.</span> <span class="nav-text">找到安装目录</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E4%BF%AE%E6%94%B9core-site-xml"><span class="nav-number">2.0.2.</span> <span class="nav-text">修改core-site.xml</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E4%BF%AE%E6%94%B9hdfs-site-xml"><span class="nav-number">2.0.3.</span> <span class="nav-text">修改hdfs-site.xml</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%B7%BB%E5%8A%A0%E7%8E%AF%E5%A2%83%E5%8F%98%E9%87%8F"><span class="nav-number">2.0.4.</span> <span class="nav-text">添加环境变量</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%A0%BC%E5%BC%8F%E5%8C%96HDFS"><span class="nav-number">2.0.5.</span> <span class="nav-text">格式化HDFS</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%90%AF%E5%8A%A8Hadoop"><span class="nav-number">2.0.6.</span> <span class="nav-text">启动Hadoop</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%89%E8%A3%85Spark"><span class="nav-number">3.</span> <span class="nav-text">安装Spark</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%89%BE%E5%88%B0%E5%AE%89%E8%A3%85%E7%9B%AE%E5%BD%95-1"><span class="nav-number">3.0.1.</span> <span class="nav-text">找到安装目录</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E4%BF%AE%E6%94%B9spark-env-sh"><span class="nav-number">3.0.2.</span> <span class="nav-text">修改spark-env.sh</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%8A%A0%E5%85%A5%E7%8E%AF%E5%A2%83%E5%8F%98%E9%87%8F"><span class="nav-number">3.0.3.</span> <span class="nav-text">加入环境变量</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%90%AF%E5%8A%A8Spark"><span class="nav-number">3.0.4.</span> <span class="nav-text">启动Spark</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%9F%A5%E7%9C%8B%E8%BF%9B%E7%A8%8B"><span class="nav-number">3.0.5.</span> <span class="nav-text">查看进程</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%85%8D%E7%BD%AEPycharm%E5%BC%80%E5%8F%91spark%E5%BA%94%E7%94%A8"><span class="nav-number">4.</span> <span class="nav-text">配置Pycharm开发spark应用</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">忘了</p>
+  <div class="site-description" itemprop="description">指尖悦动，代码跳舞。</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">14</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">10</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">15</span>
+        <span class="site-state-item-name">tags</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/gmle" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;gmle" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:e.le.lee.leee@gmail.com" title="E-Mail → mailto:e.le.lee.leee@gmail.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2015 – 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">忘了</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>
