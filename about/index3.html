@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>❤️ 爱心世界 - Love World</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- 背景Canvas -->
+    <canvas id="bgCanvas"></canvas>
+    
+    <!-- 主Canvas用于爱心动画 -->
+    <canvas id="heartCanvas"></canvas>
+    
+    <!-- 粒子Canvas层 -->
+    <canvas id="particleCanvas"></canvas>
+    
+    <!-- 主标题 -->
+    <div class="hero-section">
+        <h1 class="main-title">
+            <span class="title-word">LOVE</span>
+            <span class="title-heart">❤️</span>
+            <span class="title-word">WORLD</span>
+        </h1>
+        <p class="subtitle">点击屏幕，感受爱的力量</p>
+    </div>
+    
+    <!-- 控制面板 -->
+    <div class="control-panel" id="controlPanel">
+        <div class="panel-header">
+            <span class="panel-title">✨ 控制面板</span>
+            <button class="toggle-btn" id="togglePanel">−</button>
+        </div>
+        <div class="panel-content" id="panelContent">
+            <div class="control-group">
+                <label>动画模式</label>
+                <select id="animMode">
+                    <option value="pulse">脉冲心跳</option>
+                    <option value="particle">粒子爱心</option>
+                    <option value="wave">波浪扩散</option>
+                    <option value="spiral">螺旋旋转</option>
+                    <option value="explode">爆炸重组</option>
+                    <option value="rainbow">彩虹渐变</option>
+                </select>
+            </div>
+            
+            <div class="control-group">
+                <label>爱心大小</label>
+                <input type="range" id="heartSize" min="50" max="300" value="150">
+                <span class="value-display" id="sizeValue">150</span>
+            </div>
+            
+            <div class="control-group">
+                <label>动画速度</label>
+                <input type="range" id="animSpeed" min="0.5" max="3" step="0.1" value="1">
+                <span class="value-display" id="speedValue">1.0x</span>
+            </div>
+            
+            <div class="control-group">
+                <label>粒子数量</label>
+                <input type="range" id="particleCount" min="50" max="500" value="200">
+                <span class="value-display" id="particleValue">200</span>
+            </div>
+            
+            <div class="control-group">
+                <label>主色调</label>
+                <div class="color-picker">
+                    <button class="color-btn active" data-color="#ff1744" style="background: #ff1744;"></button>
+                    <button class="color-btn" data-color="#ff4081" style="background: #ff4081;"></button>
+                    <button class="color-btn" data-color="#e91e63" style="background: #e91e63;"></button>
+                    <button class="color-btn" data-color="#9c27b0" style="background: #9c27b0;"></button>
+                    <button class="color-btn" data-color="#ff5722" style="background: #ff5722;"></button>
+                </div>
+            </div>
+            
+            <div class="control-group">
+                <label>音效</label>
+                <div class="toggle-switch">
+                    <input type="checkbox" id="soundToggle" checked>
+                    <span class="slider"></span>
+                </div>
+            </div>
+            
+            <div class="control-group">
+                <label>背景音乐</label>
+                <div class="toggle-switch">
+                    <input type="checkbox" id="musicToggle">
+                    <span class="slider"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 统计信息 -->
+    <div class="stats-panel">
+        <div class="stat-item">
+            <span class="stat-label">FPS</span>
+            <span class="stat-value" id="fps">60</span>
+        </div>
+        <div class="stat-item">
+            <span class="stat-label">爱心数</span>
+            <span class="stat-value" id="heartCount">0</span>
+        </div>
+        <div class="stat-item">
+            <span class="stat-label">点击</span>
+            <span class="stat-value" id="clickCount">0</span>
+        </div>
+    </div>
+    
+    <!-- 滚动指示器 -->
+    <div class="scroll-indicator">
+        <span>向下滚动探索更多</span>
+        <div class="scroll-arrow"></div>
+    </div>
+    
+    <!-- 内容区域 -->
+    <section class="content-section" id="section1">
+        <div class="parallax-layer" data-speed="0.2">
+            <div class="floating-heart">💕</div>
+        </div>
+        <div class="content-card">
+            <h2>爱的脉冲</h2>
+            <p>每一次心跳都是生命的律动，每一次跳动都传递着爱的能量。在这个数字世界里，我们用代码编织爱的形状。</p>
+        </div>
+    </section>
+    
+    <section class="content-section" id="section2">
+        <div class="parallax-layer" data-speed="0.4">
+            <div class="floating-heart">💖</div>
+        </div>
+        <div class="content-card">
+            <h2>粒子之舞</h2>
+            <p>数千个微小的粒子，在虚拟空间中自由飞舞，最终汇聚成爱的形状。这正如我们每个人都是宇宙中的一粒尘埃，却能共同创造奇迹。</p>
+        </div>
+    </section>
+    
+    <section class="content-section" id="section3">
+        <div class="parallax-layer" data-speed="0.6">
+            <div class="floating-heart">💗</div>
+        </div>
+        <div class="content-card">
+            <h2>光影交织</h2>
+            <p>光线与色彩的完美融合，创造出令人陶醉的视觉盛宴。在这里，每一个像素都承载着对美好生活的向往。</p>
+        </div>
+    </section>
+    
+    <section class="content-section" id="section4">
+        <div class="parallax-layer" data-speed="0.8">
+            <div class="floating-heart">💝</div>
+        </div>
+        <div class="content-card">
+            <h2>无限可能</h2>
+            <p>通过控制面板，你可以自定义这个爱心世界的每一个细节。调整参数，创造属于你自己的独特体验。</p>
+        </div>
+    </section>
+    
+    <!-- 页脚 -->
+    <footer class="footer">
+        <p>Made with ❤️ | 使用 HTML5 Canvas 与 WebGL 技术构建</p>
+    </footer>
+    
+    <script src="script.js"></script>
+</body>
+</html>
